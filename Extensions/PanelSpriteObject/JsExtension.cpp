@@ -65,6 +65,16 @@ class PanelSpriteObjectJsExtension : public gd::PlatformExtension {
         "PanelSpriteObject::PanelSprite")["PanelSpriteObject::SetImageFromResource"]
         .SetFunctionName("setTexture");
 
+    GetAllActionsForObject(
+        "PanelSpriteObject::PanelSprite")["PanelSpriteObject::SetVariant"]
+        .SetFunctionName("setVariant");
+    GetAllConditionsForObject(
+        "PanelSpriteObject::PanelSprite")["PanelSpriteObject::Variant"]
+        .SetFunctionName("isVariant");
+    GetAllStrExpressionsForObject(
+        "PanelSpriteObject::PanelSprite")["Variant"]
+        .SetFunctionName("getVariant");
+
     GD_COMPLETE_EXTENSION_COMPILATION_INFORMATION();
   };
 };

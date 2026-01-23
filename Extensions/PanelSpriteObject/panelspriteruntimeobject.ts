@@ -3,6 +3,9 @@
  *  2013 Florian Rival (Florian.Rival@gmail.com)
  */
 namespace gdjs {
+  const VARIANTS_VARIABLE_NAME = '__panelSpriteVariants__';
+  const SELECTED_VARIANT_VARIABLE_NAME = '__panelSpriteSelectedVariant__';
+
   /**
    * @category Objects > Panel Sprite
    */
@@ -68,6 +71,11 @@ namespace gdjs {
 
     _objectData: PanelSpriteObjectData;
 
+    /** Current variant name */
+    _currentVariant: string = '';
+    /** Cache of variant textures loaded from object variables */
+    _variantTextures: Map<string, string> = new Map();
+
     /**
      * @param instanceContainer The container the object belongs to.
      * @param panelSpriteObjectData The initial properties of the object
@@ -92,8 +100,41 @@ namespace gdjs {
         panelSpriteObjectData.tiled
       );
 
+      // Initialize variant data from object variables
+      this._initializeVariants();
+
       // *ALWAYS* call `this.onCreated()` at the very end of your object constructor.
       this.onCreated();
+    }
+
+    /**
+     * Initialize variant textures from object variables.
+     */
+    private _initializeVariants(): void {
+      this._variantTextures.clear();
+
+      // Load variants from object variables
+      const variables = this.getVariables();
+      if (variables.has(VARIANTS_VARIABLE_NAME)) {
+        const variantsVar = variables.get(VARIANTS_VARIABLE_NAME);
+        const children = variantsVar.getAllChildren();
+        for (const variantName in children) {
+          if (children.hasOwnProperty(variantName)) {
+            const variantVar = children[variantName];
+            if (variantVar.hasChild('texture')) {
+              const texture = variantVar.getChild('texture').getAsString();
+              this._variantTextures.set(variantName, texture);
+            }
+          }
+        }
+      }
+
+      // Load the selected variant from object variables
+      if (variables.has(SELECTED_VARIANT_VARIABLE_NAME)) {
+        this._currentVariant = variables
+          .get(SELECTED_VARIANT_VARIABLE_NAME)
+          .getAsString();
+      }
     }
 
     updateFromObjectData(
@@ -357,6 +398,57 @@ namespace gdjs {
      */
     setScaleY(newScale: float): void {
       this.setHeight(this._renderer.getTextureHeight() * newScale);
+    }
+
+    /**
+     * Set the current variant of the panel sprite.
+     * The variant must be defined in the object editor.
+     * @param variantName The name of the variant.
+     * @param instanceContainer The container the object lives in.
+     */
+    setVariant(
+      variantName: string,
+      instanceContainer: gdjs.RuntimeInstanceContainer
+    ): void {
+      // Don't do anything if already on this variant
+      if (this._currentVariant === variantName) {
+        return;
+      }
+
+      // Get the texture for this variant
+      let texture = this._variantTextures.get(variantName);
+
+      // Fallback to first available variant if variant not found
+      if (texture === undefined && this._variantTextures.size > 0) {
+        const firstKey = this._variantTextures.keys().next().value;
+        if (firstKey !== undefined) {
+          texture = this._variantTextures.get(firstKey);
+          variantName = firstKey;
+        }
+      }
+
+      // If we have a texture, set it
+      if (texture !== undefined) {
+        this._currentVariant = variantName;
+        this._renderer.setTexture(texture, instanceContainer);
+      }
+    }
+
+    /**
+     * Check if the current variant matches the given name.
+     * @param variantName The variant name to check.
+     * @returns True if the current variant matches.
+     */
+    isVariant(variantName: string): boolean {
+      return this._currentVariant === variantName;
+    }
+
+    /**
+     * Get the name of the current variant.
+     * @returns The current variant name.
+     */
+    getVariant(): string {
+      return this._currentVariant;
     }
   }
   gdjs.registerObject(

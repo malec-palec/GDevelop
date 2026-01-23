@@ -1,6 +1,10 @@
 // @ts-check
 const fs = require('fs');
+const https = require('https');
 const {default: axios} = require('axios');
+
+// Create HTTPS agent that ignores SSL certificate errors (for corporate proxies)
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 /**
  * @param {string} url
@@ -11,6 +15,7 @@ const downloadLocalFile = async (url, outputPath) => {
   const writer = fs.createWriteStream(outputPath);
   const response = await axios.get(url, {
     responseType: 'stream',
+    httpsAgent,
   });
 
   return new Promise((resolve, reject) => {

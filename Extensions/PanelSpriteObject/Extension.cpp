@@ -221,4 +221,33 @@ void DeclarePanelSpriteObjectExtension(gd::PlatformExtension& extension) {
       .AddParameter("imageResource", _("Image file (or image resource name)"))
       .AddCodeOnlyParameter("currentScene", "0")
       .SetFunctionName("ChangeAndReloadImage");
+
+  obj.AddAction("SetVariant",
+                _("Set variant"),
+                _("Change the variant of a Panel Sprite. Each variant can have "
+                  "its own image. Use the object editor to define variants."),
+                _("Set variant of _PARAM0_ to _PARAM1_"),
+                _("Variant"),
+                "res/imageicon24.png",
+                "res/imageicon.png")
+      .AddParameter("object", _("Object"), "PanelSprite")
+      .AddParameter("string", _("Variant name"))
+      .AddCodeOnlyParameter("currentScene", "0");
+
+  obj.AddCondition("Variant",
+                   _("Current variant"),
+                   _("Check the current variant of a Panel Sprite."),
+                   _("Variant of _PARAM0_ is _PARAM1_"),
+                   _("Variant"),
+                   "res/imageicon24.png",
+                   "res/imageicon.png")
+      .AddParameter("object", _("Object"), "PanelSprite")
+      .AddParameter("string", _("Variant name"));
+
+  obj.AddStrExpression("Variant",
+                       _("Current variant"),
+                       _("Return the name of the current variant."),
+                       _("Variant"),
+                       "res/imageicon.png")
+      .AddParameter("object", _("Object"), "PanelSprite");
 }
